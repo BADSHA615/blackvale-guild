@@ -1,0 +1,129 @@
+================================================================================
+              AUTH FIXES COMPLETE - TESTING CHECKLIST
+================================================================================
+
+WHAT WAS FIXED:
+================================================================================
+✅ Fixed API Base URL - Now uses environment variable (REACT_APP_API_URL)
+✅ Fixed Token Storage - Token is now properly saved to localStorage
+✅ Fixed Production URL - Updated .env.production with correct backend URL
+✅ Fixed React Hooks - SquadManagement.js useEffect dependencies fixed
+
+YOUR CURRENT SETUP:
+================================================================================
+Frontend API URL (Local): http://localhost:5000
+Frontend API URL (Production): https://blackvale-backend.onrender.com
+Backend URL: https://blackvale-backend.onrender.com
+
+TESTING LOGIN & REGISTER:
+================================================================================
+
+TEST 1: Local Testing (if running locally)
+-------
+1. Open terminal in your project folder
+2. Start backend: cd backend && npm run dev
+3. Start frontend: cd frontend && npm start
+4. Go to http://localhost:3000
+5. Click "Register"
+6. Fill in:
+   - Username: testuser
+   - Email: test@example.com
+   - Game ID: 12345678
+   - Password: password123
+7. Click "Register"
+8. Should redirect to Dashboard and show "Logout" button
+9. Click "Logout"
+10. Click "Login"
+11. Fill in:
+    - Email: test@example.com
+    - Password: password123
+12. Click "Login"
+13. Should redirect to Dashboard
+
+TEST 2: Production Testing (Netlify)
+------
+1. Wait for Netlify build to complete (check GitHub push)
+2. Go to your Netlify URL: https://blackvale.netlify.app
+3. Click "Register"
+4. Fill in test account:
+   - Username: produser123
+   - Email: prod@test.com
+   - Game ID: 87654321
+   - Password: password123
+5. Click "Register"
+6. Should redirect to Dashboard
+7. Look for "Logout" button in navbar
+8. If you see it, login is working!
+
+WHAT TO LOOK FOR:
+================================================================================
+✅ Register button works
+✅ Form submits without errors
+✅ Redirects to Dashboard after registration
+✅ "Logout" button appears in navbar
+✅ Login form works
+✅ Can log in with registered account
+✅ Token is stored (check browser DevTools > Application > Local Storage)
+
+TROUBLESHOOTING:
+================================================================================
+
+If you get "Cannot POST /api/auth/register":
+  → Backend is not running
+  → Fix: Make sure Render backend is deployed and running
+  → Check: https://dashboard.render.com
+
+If you get "Failed to fetch":
+  → API URL is incorrect
+  → Fix: Check REACT_APP_API_URL environment variable
+  → For local: should be http://localhost:5000
+  → For production: should be https://blackvale-backend.onrender.com
+
+If login works but token not saved:
+  → localStorage might be disabled
+  → Check: Browser DevTools > Application > Local Storage
+  → You should see "token" and "userId" keys
+
+If page doesn't redirect after login:
+  → Check browser console (F12) for errors
+  → Check Network tab to see if API response is successful
+
+DATABASE ISSUES:
+================================================================================
+If you get "User already exists":
+  → Username or email already registered
+  → Use different email/username
+
+If you get "MongoDB connection failed":
+  → MongoDB is not running
+  → Fix: Check MongoDB Atlas is set up correctly
+  → Check: Network whitelist is 0.0.0.0/0
+
+If registration works but login fails:
+  → Password not hashing correctly
+  → Check: User model has bcrypt password hashing
+  → Verify: Password is at least 6 characters
+
+NEXT STEPS:
+================================================================================
+1. ✅ Fix pushed to GitHub (DONE)
+2. Wait for Netlify rebuild
+3. Test register/login on Netlify
+4. Once auth works, test other features:
+   - Create squad
+   - Upload screenshot
+   - View leaderboard
+5. If everything works, you're LIVE!
+
+DEPLOYMENT STATUS:
+================================================================================
+Backend (Render):    https://blackvale-backend.onrender.com
+Frontend (Netlify):  https://blackvale.netlify.app
+GitHub Repo:         https://github.com/BADSHA615/blackvale-guild
+
+All changes have been committed and pushed to GitHub.
+Netlify will automatically rebuild and deploy.
+
+================================================================================
+                    Test the app and let me know if it works!
+================================================================================
