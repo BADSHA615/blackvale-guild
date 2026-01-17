@@ -1,0 +1,262 @@
+.leaderboard-container {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+}
+
+.leaderboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.leaderboard-header h1 {
+  color: #00d4ff;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.leaderboard-header .subtitle {
+  color: #888;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  color: #0a0e27;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.leaderboard-table {
+  background: linear-gradient(135deg, #1a1f3a 0%, #2d2e5f 100%);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+  margin-bottom: 40px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: linear-gradient(135deg, #0099cc 0%, #00d4ff 100%);
+}
+
+thead th {
+  padding: 20px;
+  color: #0a0e27;
+  font-weight: bold;
+  text-align: left;
+}
+
+.rank-col {
+  width: 80px;
+  text-align: center !important;
+}
+
+.player-col {
+  width: auto;
+}
+
+.center {
+  text-align: center !important;
+}
+
+tbody tr {
+  border-bottom: 1px solid #333;
+  transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+  background-color: rgba(0, 212, 255, 0.1);
+  transform: translateX(5px);
+}
+
+tbody tr.rank-1 {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%);
+  border-left: 5px solid #ffd700;
+}
+
+tbody tr.rank-1:hover {
+  box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+tbody tr.rank-2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, transparent 100%);
+  border-left: 5px solid #c0c0c0;
+}
+
+tbody tr.rank-2:hover {
+  box-shadow: inset 0 0 15px rgba(192, 192, 192, 0.2);
+}
+
+tbody tr.rank-3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, transparent 100%);
+  border-left: 5px solid #cd7f32;
+}
+
+tbody tr.rank-3:hover {
+  box-shadow: inset 0 0 15px rgba(205, 127, 50, 0.2);
+}
+
+tbody td {
+  padding: 18px 20px;
+  color: #e0e0e0;
+}
+
+.rank-badge {
+  display: inline-block;
+  font-size: 1.5rem;
+  text-align: center;
+  min-width: 40px;
+}
+
+.player-info {
+  padding: 5px 0;
+}
+
+.player-name {
+  color: #00d4ff;
+  font-weight: bold;
+  margin-bottom: 3px;
+  font-size: 1.05rem;
+}
+
+.game-id {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.score-cell {
+  font-size: 1.3rem;
+  color: #ffd700;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-size: 1.2rem;
+}
+
+.no-data {
+  background: linear-gradient(135deg, #1a1f3a 0%, #2d2e5f 100%);
+  border: 2px dashed #00d4ff;
+  border-radius: 10px;
+  padding: 60px 20px;
+  text-align: center;
+  color: #888;
+  margin-bottom: 40px;
+}
+
+.no-data p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.error-message {
+  background: linear-gradient(135deg, #5f1f1f 0%, #3f0f0f 100%);
+  border: 2px solid #ff6b6b;
+  color: #ff9999;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 1.05rem;
+}
+
+.leaderboard-info {
+  background: linear-gradient(135deg, #1a1f3a 0%, #2d2e5f 100%);
+  border: 2px solid #00d4ff;
+  border-radius: 10px;
+  padding: 30px;
+  margin-top: 40px;
+}
+
+.leaderboard-info h3 {
+  color: #00d4ff;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+
+.leaderboard-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaderboard-info li {
+  color: #e0e0e0;
+  padding: 10px 0;
+  padding-left: 30px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 1024px) {
+  .leaderboard-header h1 {
+    font-size: 2rem;
+  }
+
+  tbody td, thead th {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .leaderboard-container {
+    padding: 20px 10px;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .leaderboard-header .subtitle {
+    font-size: 0.95rem;
+  }
+
+  table {
+    font-size: 0.85rem;
+  }
+
+  tbody td, thead th {
+    padding: 12px 8px;
+  }
+
+  .rank-col {
+    width: 60px;
+  }
+
+  .player-name {
+    font-size: 0.95rem;
+  }
+
+  .game-id {
+    font-size: 0.75rem;
+  }
+
+  .score-cell {
+    font-size: 1.1rem;
+  }
+}

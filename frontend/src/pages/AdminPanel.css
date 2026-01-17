@@ -1,0 +1,383 @@
+.admin-panel {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+}
+
+.admin-panel h1 {
+  color: #ffd700;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.tabs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #333;
+}
+
+.tab {
+  padding: 15px 30px;
+  background: transparent;
+  color: #888;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  color: #00d4ff;
+}
+
+.tab.active {
+  color: #ffd700;
+  border-bottom-color: #ffd700;
+}
+
+.admin-content {
+  background: linear-gradient(135deg, #1a1f3a 0%, #2d2e5f 100%);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+}
+
+.approval-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.approval-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.approval-item {
+  display: flex;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 155, 204, 0.05) 100%);
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  align-items: center;
+}
+
+.approval-item:hover {
+  border-color: #00d4ff;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+}
+
+.item-image {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-info {
+  flex: 1;
+}
+
+.item-info h3 {
+  color: #00d4ff;
+  margin-bottom: 5px;
+}
+
+.game-id {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.date {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.review-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #0a0e27;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+.review-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.approval-detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.back-btn {
+  background: transparent;
+  color: #00d4ff;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border: 1px solid #00d4ff;
+  border-radius: 5px;
+  align-self: flex-start;
+  font-weight: bold;
+}
+
+.back-btn:hover {
+  background-color: rgba(0, 212, 255, 0.1);
+}
+
+.approval-detail h2 {
+  color: #ffd700;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.screenshot-review {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.image-container {
+  border: 2px solid #00d4ff;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 500px;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #0a0e27;
+}
+
+.review-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.review-info p {
+  color: #e0e0e0;
+  line-height: 1.5;
+}
+
+.review-info strong {
+  color: #00d4ff;
+}
+
+.squad-review {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.squad-review p {
+  color: #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.squad-review strong {
+  color: #00d4ff;
+}
+
+.approval-detail h3 {
+  color: #00d4ff;
+  margin: 20px 0 15px 0;
+}
+
+.comment-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.comment-section label {
+  color: #ffd700;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.comment-section textarea {
+  padding: 12px;
+  background-color: #0a0e27;
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: #e0e0e0;
+  font-family: inherit;
+}
+
+.comment-section textarea:focus {
+  border-color: #00d4ff;
+  outline: none;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+}
+
+.approve-btn {
+  background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+  color: #0a0e27;
+  padding: 12px 30px;
+  font-weight: bold;
+  border-radius: 5px;
+  flex: 1;
+}
+
+.approve-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(81, 207, 102, 0.4);
+}
+
+.reject-btn {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  color: white;
+  padding: 12px 30px;
+  font-weight: bold;
+  border-radius: 5px;
+  flex: 1;
+}
+
+.reject-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.members-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 8px;
+}
+
+.member-item.leader {
+  padding: 12px;
+  background: linear-gradient(135deg, #ffd700 0%, rgba(255, 215, 0, 0.1) 100%);
+  border: 1px solid #ffd700;
+  border-radius: 5px;
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.member-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.member-checkbox:hover {
+  background-color: rgba(0, 212, 255, 0.1);
+}
+
+.member-checkbox input {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.member-checkbox span {
+  color: #e0e0e0;
+}
+
+.squad-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 155, 204, 0.05) 100%);
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.squad-item:hover {
+  border-color: #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+}
+
+.squad-basic {
+  flex: 1;
+}
+
+.squad-basic h3 {
+  color: #00d4ff;
+  margin-bottom: 5px;
+}
+
+.squad-basic .leader {
+  color: #ffd700;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.squad-basic .description {
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.squad-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.member-count {
+  color: #51cf66;
+  font-weight: bold;
+}
+
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #888;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .screenshot-review {
+    grid-template-columns: 1fr;
+  }
+
+  .approval-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .squad-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+}
