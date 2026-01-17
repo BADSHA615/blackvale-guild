@@ -9,7 +9,8 @@ const settingsSchema = new mongoose.Schema({
   websiteLogo: {
     type: String,
     default: '⚔️',
-    required: true
+    required: true,
+    // Can store emoji text or Base64 image data (data:image/...)
   },
   description: {
     type: String,

@@ -27,11 +27,26 @@ function Navbar({ isAuthenticated, userRole, onLogout }) {
     navigate('/');
   };
 
+  const renderLogo = () => {
+    if (settings.websiteLogo && settings.websiteLogo.startsWith('data:')) {
+      // It's an image - show as img tag
+      return (
+        <img 
+          src={settings.websiteLogo} 
+          alt="Logo" 
+          style={{ height: '40px', marginRight: '10px', objectFit: 'contain' }}
+        />
+      );
+    }
+    // It's text/emoji
+    return settings.websiteLogo || '⚔️';
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="logo">
-          {settings.websiteLogo} {settings.websiteName}
+        <Link to="/" className="logo" style={{ display: 'flex', alignItems: 'center' }}>
+          {renderLogo()} {settings.websiteName}
         </Link>
         <ul className="nav-menu">
           <li><Link to="/">Dashboard</Link></li>

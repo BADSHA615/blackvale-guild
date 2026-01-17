@@ -67,6 +67,32 @@ function AdminPanel() {
     }
   };
 
+  const handleLogoImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (max 1MB)
+      if (file.size > 1024 * 1024) {
+        setSettingsMessage('❌ Image must be smaller than 1MB');
+        return;
+      }
+      
+      // Check file type
+      if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
+        setSettingsMessage('❌ Only JPG and PNG files are allowed');
+        return;
+      }
+
+      // Convert to Base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setSettings({...settings, websiteLogo: event.target.result});
+        setSettingsMessage('✓ Image selected');
+        setTimeout(() => setSettingsMessage(''), 2000);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUpdateSettings = async () => {
     try {
       setSettingsLoading(true);
@@ -341,14 +367,40 @@ function AdminPanel() {
                   </div>
 
                   <div className="form-group">
-                    <label>Logo/Emoji:</label>
-                    <input 
-                      type="text" 
-                      value={settings.websiteLogo}
-                      onChange={(e) => setSettings({...settings, websiteLogo: e.target.value})}
-                      placeholder="Enter logo or emoji"
-                      maxLength="10"
-                    />
+                    <label>Logo/Emoji or Image:</label>
+                    <div className="logo-input-group">
+                      <div className="logo-preview">
+                        {settings.websiteLogo && settings.websiteLogo.startsWith('data:') ? (
+                          <img src={settings.websiteLogo} alt="Logo preview" className="logo-image" />
+                        ) : (
+                          <span className="logo-emoji">{settings.websiteLogo || '⚔️'}</span>
+                        )}
+                      </div>
+                      <div className="logo-input-controls">
+                        <input 
+                          type="file"
+                          id="logo-upload"
+                          accept="image/jpeg, image/jpg, image/png"
+                          onChange={handleLogoImageChange}
+                          style={{ display: 'none' }}
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => document.getElementById('logo-upload').click()}
+                          className="upload-btn"
+                        >
+                          📤 Upload Image (JPG/PNG)
+                        </button>
+                        <p className="help-text">or enter emoji below:</p>
+                        <input 
+                          type="text" 
+                          value={settings.websiteLogo.startsWith('data:') ? '' : settings.websiteLogo}
+                          onChange={(e) => setSettings({...settings, websiteLogo: e.target.value})}
+                          placeholder="Enter emoji or text"
+                          maxLength="10"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="form-group">
