@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { screenshotService, squadService, settingsService } from '../services/api';
+import { useTheme } from '../themes/ThemeContext';
 import './AdminPanel.css';
 
 function AdminPanel() {
+  const { applyTheme, themes } = useTheme();
   const [activeTab, setActiveTab] = useState('screenshots');
   const [pendingScreenshots, setPendingScreenshots] = useState([]);
   const [pendingSquads, setPendingSquads] = useState([]);
@@ -16,7 +18,8 @@ function AdminPanel() {
   const [settings, setSettings] = useState({
     websiteName: '',
     websiteLogo: '',
-    description: ''
+    description: '',
+    theme: 'dark'
   });
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState('');
@@ -65,6 +68,13 @@ function AdminPanel() {
     } finally {
       setSettingsLoading(false);
     }
+  };
+
+  const handleThemeChange = (newTheme) => {
+    setSettings({...settings, theme: newTheme});
+    applyTheme(newTheme);
+    setSettingsMessage('✓ Theme changed to ' + themes[newTheme].name);
+    setTimeout(() => setSettingsMessage(''), 2000);
   };
 
   const handleLogoImageChange = (e) => {
@@ -400,6 +410,27 @@ function AdminPanel() {
                           maxLength="10"
                         />
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Website Theme:</label>
+                    <div className="theme-selector">
+                      {Object.entries(themes).map(([key, theme]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          className={`theme-option ${settings.theme === key ? 'active' : ''}`}
+                          onClick={() => handleThemeChange(key)}
+                          title={theme.description}
+                        >
+                          <div className="theme-preview" style={{
+                            background: theme.primaryBg,
+                            border: `2px solid ${theme.accentColor}`
+                          }}></div>
+                          <span className="theme-name">{theme.name}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
 

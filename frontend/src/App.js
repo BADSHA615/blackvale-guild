@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import './themes/theme.css';
+import { ThemeProvider } from './themes/ThemeContext';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
@@ -38,19 +40,21 @@ function App() {
   };
 
   return (
-    <Router>
-      <Navbar isAuthenticated={isAuthenticated} userRole={userRole} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
-        <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register onLogin={handleLogin} />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/profile" element={isAuthenticated ? <PlayerProfile /> : <Navigate to="/login" />} />
-        <Route path="/submit-screenshot" element={isAuthenticated ? <ScreenshotSubmission /> : <Navigate to="/login" />} />
-        <Route path="/squad" element={isAuthenticated ? <SquadManagement /> : <Navigate to="/login" />} />
-        <Route path="/admin" element={isAuthenticated && userRole === 'admin' ? <AdminPanel /> : <Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Navbar isAuthenticated={isAuthenticated} userRole={userRole} onLogout={handleLogout} />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
+          <Route path="/register" element={isAuthenticated ? <Navigate to="/" /> : <Register onLogin={handleLogin} />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/profile" element={isAuthenticated ? <PlayerProfile /> : <Navigate to="/login" />} />
+          <Route path="/submit-screenshot" element={isAuthenticated ? <ScreenshotSubmission /> : <Navigate to="/login" />} />
+          <Route path="/squad" element={isAuthenticated ? <SquadManagement /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={isAuthenticated && userRole === 'admin' ? <AdminPanel /> : <Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

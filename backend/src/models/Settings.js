@@ -16,6 +16,12 @@ const settingsSchema = new mongoose.Schema({
     type: String,
     default: 'A Free Fire Guild Management System'
   },
+  theme: {
+    type: String,
+    default: 'dark',
+    enum: ['dark', 'light', 'neon', 'ocean', 'forest', 'sunset', 'midnight'],
+    required: true
+  },
   updatedAt: {
     type: Date,
     default: Date.now

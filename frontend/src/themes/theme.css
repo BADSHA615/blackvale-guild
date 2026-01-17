@@ -1,0 +1,168 @@
+/* Global Theme CSS Variables */
+:root {
+  /* Default Dark Theme */
+  --primary-bg: #0a0e27;
+  --secondary-bg: #1a1f3a;
+  --accent-color: #ffd700;
+  --text-color: #ffffff;
+  --border-color: #333;
+  --hover-color: #00d4ff;
+  
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+  --spacing-xl: 30px;
+  
+  /* Font sizes */
+  --font-size-sm: 0.9rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.2rem;
+  --font-size-xl: 1.5rem;
+  
+  /* Border radius */
+  --border-radius: 5px;
+  --border-radius-lg: 10px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Apply theme to common elements */
+body {
+  background: var(--primary-bg);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.container {
+  background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+}
+
+/* Navigation theme */
+.navbar {
+  background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--primary-bg) 100%);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+.navbar a, .navbar button {
+  color: var(--text-color);
+}
+
+.navbar a:hover, .navbar button:hover {
+  color: var(--hover-color);
+}
+
+.admin-link {
+  color: var(--accent-color) !important;
+}
+
+/* Form elements theme */
+input, textarea, select {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(var(--accent-color), 0.3);
+}
+
+/* Button theme */
+.btn, button {
+  transition: all 0.3s ease;
+  border-radius: var(--border-radius);
+}
+
+.btn:hover, button:hover {
+  transform: translateY(-2px);
+}
+
+/* Card theme */
+.card {
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Admin panel theme */
+.admin-panel {
+  background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+}
+
+.admin-panel h1 {
+  color: var(--accent-color);
+}
+
+.tabs {
+  border-bottom: 2px solid var(--border-color);
+}
+
+.tab {
+  color: var(--text-color);
+}
+
+.tab:hover {
+  color: var(--hover-color);
+}
+
+.tab.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+.admin-content {
+  background: linear-gradient(135deg, var(--secondary-bg) 0%, #2d2e5f 100%);
+  border: 2px solid var(--accent-color);
+}
+
+/* Message theme */
+.message {
+  border-radius: var(--border-radius);
+}
+
+.message.success {
+  background: rgba(81, 207, 102, 0.1);
+  border: 1px solid #51cf66;
+  color: #51cf66;
+}
+
+.message.error {
+  background: rgba(255, 102, 102, 0.1);
+  border: 1px solid #ff6666;
+  color: #ff6666;
+}
+
+/* Modal/Dialog theme */
+.modal, .dialog {
+  background: var(--secondary-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Table theme */
+table {
+  border-collapse: collapse;
+}
+
+table th {
+  background: var(--secondary-bg);
+  color: var(--accent-color);
+  border: 1px solid var(--border-color);
+}
+
+table td {
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+table tr:hover {
+  background: rgba(var(--hover-color), 0.05);
+}
