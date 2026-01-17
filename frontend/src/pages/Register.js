@@ -25,6 +25,7 @@ function Register({ onLogin }) {
         gameId,
       });
       localStorage.setItem('userId', response.data.user.id);
+      localStorage.setItem('token', response.data.token);
       onLogin(response.data.token, 'player');
       navigate('/');
     } catch (err) {

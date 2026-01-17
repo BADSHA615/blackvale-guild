@@ -18,6 +18,7 @@ function Login({ onLogin }) {
     try {
       const response = await authService.login({ email, password });
       localStorage.setItem('userId', response.data.user.id);
+      localStorage.setItem('token', response.data.token);
       onLogin(response.data.token, response.data.user.role);
       navigate('/');
     } catch (err) {
