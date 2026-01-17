@@ -24,7 +24,7 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Server is running' });
+  res.json({ status: 'Server is running', timestamp: new Date() });
 });
 
 const PORT = process.env.PORT || 5000;
