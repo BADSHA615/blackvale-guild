@@ -20,6 +20,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/screenshots', require('./routes/screenshotRoutes'));
 app.use('/api/squads', require('./routes/squadRoutes'));
 app.use('/api/leaderboard', require('./routes/leaderboardRoutes'));
+app.use('/api/settings', require('./routes/settingsRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

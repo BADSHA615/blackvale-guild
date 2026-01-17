@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { settingsService } from '../services/api';
 import './Navbar.css';
 
 function Navbar({ isAuthenticated, userRole, onLogout }) {
   const navigate = useNavigate();
+  const [settings, setSettings] = useState({
+    websiteLogo: '⚔️',
+    websiteName: 'BlackVale Guild'
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await settingsService.getSettings();
+        setSettings(response.data);
+      } catch (error) {
+        console.log('Using default settings');
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleLogout = () => {
     onLogout();
@@ -14,7 +31,7 @@ function Navbar({ isAuthenticated, userRole, onLogout }) {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="logo">
-          ⚔️ BlackVale Guild
+          {settings.websiteLogo} {settings.websiteName}
         </Link>
         <ul className="nav-menu">
           <li><Link to="/">Dashboard</Link></li>

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const authMiddleware = (req, res, next) => {
+const protect = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     
@@ -17,11 +17,15 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-const adminMiddleware = (req, res, next) => {
+const admin = (req, res, next) => {
   if (req.userRole !== 'admin') {
     return res.status(403).json({ message: 'Admin access required' });
   }
   next();
 };
 
-module.exports = { authMiddleware, adminMiddleware };
+// For backwards compatibility
+const authMiddleware = protect;
+const adminMiddleware = admin;
+
+module.exports = { protect, admin, authMiddleware, adminMiddleware };

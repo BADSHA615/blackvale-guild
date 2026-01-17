@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { screenshotService, squadService } from '../services/api';
+import { screenshotService, squadService, settingsService } from '../services/api';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -11,12 +11,23 @@ function AdminPanel() {
   const [selectedSquad, setSelectedSquad] = useState(null);
   const [comment, setComment] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
+  
+  // Settings state
+  const [settings, setSettings] = useState({
+    websiteName: '',
+    websiteLogo: '',
+    description: ''
+  });
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsMessage, setSettingsMessage] = useState('');
 
   useEffect(() => {
     if (activeTab === 'screenshots') {
       fetchPendingScreenshots();
-    } else {
+    } else if (activeTab === 'squads') {
       fetchPendingSquads();
+    } else if (activeTab === 'settings') {
+      fetchSettings();
     }
   }, [activeTab]);
 
@@ -41,6 +52,31 @@ function AdminPanel() {
       console.error('Error fetching squads:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      setSettingsLoading(true);
+      const response = await settingsService.getSettings();
+      setSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const handleUpdateSettings = async () => {
+    try {
+      setSettingsLoading(true);
+      await settingsService.updateSettings(settings);
+      setSettingsMessage('✅ Settings updated successfully!');
+      setTimeout(() => setSettingsMessage(''), 3000);
+    } catch (error) {
+      setSettingsMessage('❌ Error updating settings');
+    } finally {
+      setSettingsLoading(false);
     }
   };
 
@@ -118,6 +154,12 @@ function AdminPanel() {
             onClick={() => setActiveTab('squads')}
           >
             Squads ({pendingSquads.length})
+          </button>
+          <button
+            className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            ⚙️ Settings
           </button>
         </div>
 
@@ -277,6 +319,65 @@ function AdminPanel() {
                     ))
                   )}
                 </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'settings' && !loading && (
+            <div className="approval-section">
+              <h2>⚙️ Website Settings</h2>
+              {settingsLoading ? (
+                <div className="loading">Loading settings...</div>
+              ) : (
+                <form className="settings-form">
+                  <div className="form-group">
+                    <label>Website Name:</label>
+                    <input 
+                      type="text" 
+                      value={settings.websiteName}
+                      onChange={(e) => setSettings({...settings, websiteName: e.target.value})}
+                      placeholder="Enter website name"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Logo/Emoji:</label>
+                    <input 
+                      type="text" 
+                      value={settings.websiteLogo}
+                      onChange={(e) => setSettings({...settings, websiteLogo: e.target.value})}
+                      placeholder="Enter logo or emoji"
+                      maxLength="10"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Description:</label>
+                    <textarea 
+                      value={settings.description}
+                      onChange={(e) => setSettings({...settings, description: e.target.value})}
+                      placeholder="Enter website description"
+                      rows="4"
+                    ></textarea>
+                  </div>
+
+                  <div className="button-group">
+                    <button 
+                      type="button" 
+                      onClick={handleUpdateSettings} 
+                      disabled={settingsLoading}
+                      className="approve-btn"
+                    >
+                      {settingsLoading ? '🔄 Updating...' : '✓ Update Settings'}
+                    </button>
+                  </div>
+
+                  {settingsMessage && (
+                    <div className={`message ${settingsMessage.includes('successfully') ? 'success' : 'error'}`}>
+                      {settingsMessage}
+                    </div>
+                  )}
+                </form>
               )}
             </div>
           )}
