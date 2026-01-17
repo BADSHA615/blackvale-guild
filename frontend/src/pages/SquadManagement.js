@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { squadService, authService } from '../services/api';
 import './SquadManagement.css';
 
@@ -16,12 +16,7 @@ function SquadManagement() {
 
   const userId = localStorage.getItem('userId');
 
-  useEffect(() => {
-    fetchSquad();
-    fetchAllUsers();
-  }, []);
-
-  const fetchSquad = async () => {
+  const fetchSquad = useCallback(async () => {
     try {
       const response = await squadService.getUserSquad(userId);
       setSquad(response.data);
@@ -30,16 +25,21 @@ function SquadManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  const fetchAllUsers = async () => {
+  const fetchAllUsers = useCallback(async () => {
     try {
       const response = await authService.getAllUsers();
       setAllUsers(response.data.filter(u => u._id !== userId));
     } catch (error) {
       console.error('Error fetching users:', error);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    fetchSquad();
+    fetchAllUsers();
+  }, [fetchSquad, fetchAllUsers]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
