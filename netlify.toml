@@ -1,36 +1,37 @@
 # Netlify Configuration for BlackVale Guild
-
 [build]
-  # Frontend build settings
   base = "frontend"
   command = "npm run build"
   publish = "build"
+  environment = { NODE_VERSION = "18", CI = "false" }
 
+# Environment variables - SET THESE IN NETLIFY DASHBOARD TOO!
 [build.environment]
-  # Node version
   NODE_VERSION = "18"
-  
-  # React environment
   REACT_APP_API_URL = "https://blackvale-backend.onrender.com"
   CI = "false"
 
-# Redirect rules for SPA (React Router)
+# Redirect all routes to index.html for React Router
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Headers for security and performance
+# Proxy API calls to backend
+[[redirects]]
+  from = "/api/*"
+  to = "https://blackvale-backend.onrender.com/api/:splat"
+  status = 200
+  force = false
+
+# Cache headers for performance
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "no-referrer"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
-# Cache control
 [[headers]]
   for = "/static/*"
   [headers.values]
@@ -40,10 +41,3 @@
   for = "/index.html"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
-
-# API proxy (optional - if you want to proxy API calls)
-[[redirects]]
-  from = "/api/*"
-  to = "https://blackvale-backend.onrender.com/api/:splat"
-  status = 200
-  force = false
