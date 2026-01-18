@@ -33,6 +33,7 @@ function SquadManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
 
   // Admin: Fetch Dashboard
   const fetchAdminDashboard = useCallback(async () => {
@@ -676,19 +677,86 @@ function SquadManagement() {
 
             {manageMode && squad.leader._id === userId && squad.members.length < squad.maxMembers && (
               <div className="manage-section">
-                <h3>Add Members</h3>
-                <div className="available-members">
-                  {allUsers.filter(u => !squad.members.some(m => m._id === u._id)).map(user => (
-                    <div key={user._id} className="user-option">
-                      <span>{user.username} ({user.gameId})</span>
-                      <button 
-                        onClick={() => handleAddMember(user._id)}
-                        className="btn-add"
-                      >
-                        Add
-                      </button>
+                <div className="manage-header">
+                  <div className="manage-title">
+                    <h3>➕ Add New Members</h3>
+                    <span className="members-available">{squad.members.length}/{squad.maxMembers} slots filled</span>
+                  </div>
+                  <div className="slot-progress">
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill" 
+                        style={{width: `${(squad.members.length / squad.maxMembers) * 100}%`}}
+                      ></div>
                     </div>
-                  ))}
+                  </div>
+                </div>
+
+                <div className="member-search-box">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search players by username or game ID..."
+                    value={memberSearchTerm}
+                    onChange={(e) => setMemberSearchTerm(e.target.value)}
+                    className="member-search-input"
+                  />
+                  <span className="search-hint">
+                    {allUsers.filter(u => !squad.members.some(m => m._id === u._id)).length} available players
+                  </span>
+                </div>
+
+                <div className="available-members-enhanced">
+                  {allUsers
+                    .filter(u => !squad.members.some(m => m._id === u._id))
+                    .filter(u => 
+                      u.username.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+                      u.gameId.toLowerCase().includes(memberSearchTerm.toLowerCase())
+                    )
+                    .length === 0 ? (
+                    <div className="no-members">
+                      {memberSearchTerm ? (
+                        <p>No players found matching "{memberSearchTerm}"</p>
+                      ) : (
+                        <p>All available players are already in your squad! 🎉</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="members-table">
+                      <div className="table-header-members">
+                        <div className="col-username">Username</div>
+                        <div className="col-gameid">Game ID</div>
+                        <div className="col-stats">Stats</div>
+                        <div className="col-action">Action</div>
+                      </div>
+                      {allUsers
+                        .filter(u => !squad.members.some(m => m._id === u._id))
+                        .filter(u => 
+                          u.username.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
+                          u.gameId.toLowerCase().includes(memberSearchTerm.toLowerCase())
+                        )
+                        .map(user => (
+                          <div key={user._id} className="table-row-member">
+                            <div className="col-username">
+                              <strong>{user.username}</strong>
+                            </div>
+                            <div className="col-gameid">{user.gameId}</div>
+                            <div className="col-stats">
+                              <span className="stat-badge">💥 {user.kills || 0}</span>
+                              <span className="stat-badge">🏆 {user.wins || 0}</span>
+                            </div>
+                            <div className="col-action">
+                              <button 
+                                onClick={() => handleAddMember(user._id)}
+                                className="btn-add-member"
+                                title={`Add ${user.username} to squad`}
+                              >
+                                ➕ Add
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

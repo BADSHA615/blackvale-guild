@@ -195,10 +195,199 @@
 
 .manage-section {
   margin-top: 30px;
-  padding: 20px;
-  background: rgba(0, 212, 255, 0.05);
+  padding: 25px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 212, 255, 0.02) 100%);
+  border-radius: 10px;
+  border: 2px solid #00d4ff;
+}
+
+.manage-header {
+  margin-bottom: 25px;
+}
+
+.manage-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.manage-title h3 {
+  color: #00d4ff;
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.members-available {
+  background: rgba(81, 207, 102, 0.2);
+  color: #51cf66;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.slot-progress {
+  margin-top: 10px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d4ff, #0099cc);
+  transition: width 0.3s ease;
+}
+
+.member-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.member-search-input {
+  flex: 1;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid #00d4ff;
   border-radius: 8px;
-  border-left: 3px solid #00d4ff;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.member-search-input::placeholder {
+  color: #888;
+}
+
+.member-search-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.search-hint {
+  color: #888;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  padding: 0 10px;
+}
+
+.available-members-enhanced {
+  background: linear-gradient(135deg, #1a1f3a 0%, #2d2e5f 100%);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.no-members {
+  padding: 40px 20px;
+  text-align: center;
+  color: #888;
+}
+
+.no-members p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.members-table {
+  width: 100%;
+}
+
+.table-header-members {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.5fr 1fr;
+  gap: 15px;
+  padding: 15px 20px;
+  background: rgba(0, 212, 255, 0.1);
+  border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+  font-weight: 600;
+  color: #00d4ff;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.table-row-member {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.5fr 1fr;
+  gap: 15px;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.table-row-member:last-child {
+  border-bottom: none;
+}
+
+.table-row-member:hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+.col-username {
+  color: #e0e0e0;
+}
+
+.col-username strong {
+  color: #00d4ff;
+  font-size: 1rem;
+}
+
+.col-gameid {
+  color: #888;
+  font-size: 0.95rem;
+}
+
+.col-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-badge {
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.col-action {
+  text-align: center;
+}
+
+.btn-add-member {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  color: #0a0e27;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-add-member:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+}
+
+.btn-add-member:active {
+  transform: translateY(0);
 }
 
 .available-members {
@@ -1198,5 +1387,89 @@
 
   .admin-tabs {
     flex-wrap: wrap;
+  }
+
+  /* Responsive Add Members */
+  .manage-title {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .members-available {
+    margin-top: 10px;
+  }
+
+  .member-search-box {
+    flex-direction: column;
+  }
+
+  .member-search-input {
+    width: 100%;
+  }
+
+  .table-header-members,
+  .table-row-member {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+
+  .col-stats {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-header-members,
+  .table-row-member {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .table-header-members {
+    display: none;
+  }
+
+  .table-row-member {
+    padding: 12px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .col-username::before,
+  .col-gameid::before,
+  .col-stats::before,
+  .col-action::before {
+    font-weight: 600;
+    color: #00d4ff;
+    display: block;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+  }
+
+  .col-username::before {
+    content: "Username";
+  }
+
+  .col-gameid::before {
+    content: "Game ID";
+  }
+
+  .col-stats::before {
+    content: "Stats";
+  }
+
+  .col-action::before {
+    content: "Action";
+  }
+
+  .member-search-input {
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }
