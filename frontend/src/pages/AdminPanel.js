@@ -14,6 +14,7 @@ function AdminPanel() {
   const [selectedSquad, setSelectedSquad] = useState(null);
   const [comment, setComment] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [squadMessage, setSquadMessage] = useState('');
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -51,9 +52,10 @@ function AdminPanel() {
     try {
       setLoading(true);
       const response = await squadService.getPending();
-      setPendingSquads(response.data);
+      setPendingSquads(response.data.squads || []);
     } catch (error) {
       console.error('Error fetching squads:', error);
+      setPendingSquads([]);
     } finally {
       setLoading(false);
     }
@@ -149,27 +151,37 @@ function AdminPanel() {
 
   const handleApproveSquad = async () => {
     try {
+      setSquadMessage('');
       await squadService.approve(selectedSquad._id, {
         adminComment: comment,
         selectedMembers
       });
+      setSquadMessage('✅ Squad approved successfully!');
       setComment('');
       setSelectedSquad(null);
       setSelectedMembers([]);
+      setTimeout(() => setSquadMessage(''), 3000);
       fetchPendingSquads();
     } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Error approving squad';
+      setSquadMessage(`❌ ${errorMsg}`);
       console.error('Error approving squad:', error);
     }
   };
 
   const handleRejectSquad = async () => {
     try {
+      setSquadMessage('');
       await squadService.reject(selectedSquad._id, { adminComment: comment });
+      setSquadMessage('✅ Squad rejected successfully!');
       setComment('');
       setSelectedSquad(null);
       setSelectedMembers([]);
+      setTimeout(() => setSquadMessage(''), 3000);
       fetchPendingSquads();
     } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Error rejecting squad';
+      setSquadMessage(`❌ ${errorMsg}`);
       console.error('Error rejecting squad:', error);
     }
   };
@@ -284,6 +296,11 @@ function AdminPanel() {
 
           {activeTab === 'squads' && !loading && (
             <div className="approval-section">
+              {squadMessage && (
+                <div className={`message ${squadMessage.includes('✅') ? 'success' : 'error'}`}>
+                  {squadMessage}
+                </div>
+              )}
               {selectedSquad ? (
                 <div className="approval-detail">
                   <button className="back-btn" onClick={() => setSelectedSquad(null)}>
