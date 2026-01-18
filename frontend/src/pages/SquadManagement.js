@@ -14,6 +14,9 @@ function SquadManagement() {
   const [squadAnalytics, setSquadAnalytics] = useState(null);
   const [filterStatus, setFilterStatus] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('members');
+  const [allMembers, setAllMembers] = useState([]);
+  const [memberFilter, setMemberFilter] = useState('');
 
   // User state
   const [squad, setSquad] = useState(null);
@@ -40,6 +43,7 @@ function SquadManagement() {
       ]);
       setStats(statsRes.data);
       setAllUsers(usersRes.data);
+      setAllMembers(usersRes.data);
     } catch (err) {
       setError('Error loading squad dashboard');
     } finally {
@@ -286,6 +290,18 @@ function SquadManagement() {
               >
                 ⚔️ All Squads
               </button>
+              <button 
+                className={`admin-tab ${adminView === 'analytics' ? 'active' : ''}`}
+                onClick={() => setAdminView('analytics')}
+              >
+                📈 Analytics
+              </button>
+              <button 
+                className={`admin-tab ${adminView === 'members' ? 'active' : ''}`}
+                onClick={() => setAdminView('members')}
+              >
+                👥 Members
+              </button>
             </div>
           </div>
 
@@ -326,18 +342,24 @@ function SquadManagement() {
                   placeholder="Search squads..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyUp={fetchAllSquads}
                 />
                 <select 
                   value={filterStatus} 
-                  onChange={(e) => {
-                    setFilterStatus(e.target.value);
-                    fetchAllSquads();
-                  }}
+                  onChange={(e) => setFilterStatus(e.target.value)}
                 >
                   <option value="">All Status</option>
                   <option value="approved">Approved</option>
                   <option value="pending">Pending</option>
+                </select>
+                <select 
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="members">Sort by Members</option>
+                  <option value="kills">Sort by Kills</option>
+                  <option value="wins">Sort by Wins</option>
+                  <option value="name">Sort by Name</option>
+                  <option value="recent">Most Recent</option>
                 </select>
                 <button onClick={fetchAllSquads} className="refresh-btn">🔄</button>
               </div>
@@ -346,100 +368,222 @@ function SquadManagement() {
                 <div className="no-data">No squads found</div>
               ) : (
                 <div className="squads-grid">
-                  {allSquads.map(squad => (
-                    <div key={squad._id} className="admin-squad-card">
-                      <div className="squad-title">
-                        <h3>{squad.name}</h3>
-                        <span className={`status-badge ${squad.status}`}>{squad.status}</span>
+                  {allSquads
+                    .filter(squad => 
+                      squad.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                      (!filterStatus || squad.status === filterStatus)
+                    )
+                    .sort((a, b) => {
+                      if (sortBy === 'members') return b.members.length - a.members.length;
+                      if (sortBy === 'kills') return (b.analytics?.totalKills || 0) - (a.analytics?.totalKills || 0);
+                      if (sortBy === 'wins') return (b.analytics?.totalWins || 0) - (a.analytics?.totalWins || 0);
+                      if (sortBy === 'name') return a.name.localeCompare(b.name);
+                      if (sortBy === 'recent') return new Date(b.createdAt) - new Date(a.createdAt);
+                      return 0;
+                    })
+                    .map(squad => (
+                      <div key={squad._id} className="admin-squad-card">
+                        <div className="squad-title">
+                          <h3>{squad.name}</h3>
+                          <span className={`status-badge ${squad.status}`}>{squad.status}</span>
+                        </div>
+                        <div className="squad-details">
+                          <p><strong>Leader:</strong> {squad.leader.username}</p>
+                          <p><strong>Members:</strong> {squad.members.length}/{squad.maxMembers}</p>
+                          <p><strong>Kills:</strong> {squad.analytics?.totalKills || 0}</p>
+                          <p><strong>Wins:</strong> {squad.analytics?.totalWins || 0}</p>
+                          <p><strong>Win Rate:</strong> {squad.analytics?.totalMatches > 0 ? ((squad.analytics?.totalWins / squad.analytics?.totalMatches) * 100).toFixed(1) : 0}%</p>
+                        </div>
+                        <div className="squad-btn-group">
+                          <button 
+                            onClick={() => {
+                              setSelectedSquad(squad._id);
+                              fetchSquadAnalytics(squad._id);
+                              setAdminView('analytics');
+                            }}
+                            className="btn-analytics"
+                          >
+                            📈 View
+                          </button>
+                          {squad.status === 'approved' && (
+                            <>
+                              <button 
+                                onClick={() => handleAdminAddMember(squad._id)}
+                                className="btn-add-mem"
+                              >
+                                ➕ Add
+                              </button>
+                              <button 
+                                onClick={() => handleAdminDeleteSquad(squad._id, squad.name)}
+                                className="btn-delete-squad"
+                              >
+                                🗑️ Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="squad-details">
-                        <p><strong>Leader:</strong> {squad.leader.username}</p>
-                        <p><strong>Members:</strong> {squad.members.length}/{squad.maxMembers}</p>
-                        <p><strong>Kills:</strong> {squad.analytics.totalKills}</p>
-                        <p><strong>Wins:</strong> {squad.analytics.totalWins}</p>
-                      </div>
-                      <div className="squad-btn-group">
-                        <button 
-                          onClick={() => fetchSquadAnalytics(squad._id)}
-                          className="btn-analytics"
-                        >
-                          📈 Analyze
-                        </button>
-                        {squad.status === 'approved' && (
-                          <>
-                            <button 
-                              onClick={() => handleAdminAddMember(squad._id)}
-                              className="btn-add-mem"
-                            >
-                              ➕ Add
-                            </button>
-                            <button 
-                              onClick={() => handleAdminDeleteSquad(squad._id, squad.name)}
-                              className="btn-delete-squad"
-                            >
-                              🗑️ Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* Analytics Modal */}
+          {/* Analytics Tab */}
           {adminView === 'analytics' && squadAnalytics && (
-            <div className="analytics-modal">
-              <div className="modal-content">
-                <button onClick={() => {
-                  setAdminView('all');
-                  setSelectedSquad(null);
-                }} className="close-modal">✕</button>
-                
+            <div className="analytics-view">
+              <button onClick={() => {
+                setAdminView('all');
+                setSelectedSquad(null);
+              }} className="back-btn">← Back to Squads</button>
+              
+              <div className="analytics-header">
                 <h2>{squadAnalytics.squadInfo.name}</h2>
-                
-                <div className="analytics-section">
-                  <h4>Members ({squadAnalytics.memberDetails.length})</h4>
-                  <div className="members-list">
-                    {squadAnalytics.memberDetails.map(member => (
-                      <div key={member._id} className="member-row">
-                        <div>
-                          <strong>{member.username}</strong>
-                          <span className="member-stat">Kills: {member.kills}</span>
-                        </div>
+                <div className="squad-meta">
+                  <span>👤 Leader: {squadAnalytics.squadInfo.leader}</span>
+                  <span>👥 Members: {squadAnalytics.memberDetails.length}/{squadAnalytics.squadInfo.maxMembers}</span>
+                  <span>📊 Status: {squadAnalytics.squadInfo.status}</span>
+                </div>
+              </div>
+
+              <div className="analytics-stats">
+                <div className="stat-box">
+                  <div className="stat-num">{squadAnalytics.squadInfo.totalKills || 0}</div>
+                  <div className="stat-label">Total Kills</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-num">{squadAnalytics.squadInfo.totalWins || 0}</div>
+                  <div className="stat-label">Total Wins</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-num">{squadAnalytics.squadInfo.totalMatches || 0}</div>
+                  <div className="stat-label">Total Matches</div>
+                </div>
+                <div className="stat-box">
+                  <div className="stat-num">{squadAnalytics.squadInfo.totalMatches > 0 ? ((squadAnalytics.squadInfo.totalWins / squadAnalytics.squadInfo.totalMatches) * 100).toFixed(1) : 0}%</div>
+                  <div className="stat-label">Win Rate</div>
+                </div>
+              </div>
+
+              <div className="members-analytics">
+                <h3>Member Performance</h3>
+                <div className="members-table">
+                  <div className="table-header">
+                    <div className="col-name">Name</div>
+                    <div className="col-kills">Kills</div>
+                    <div className="col-wins">Wins</div>
+                    <div className="col-status">Status</div>
+                    <div className="col-action">Action</div>
+                  </div>
+                  {squadAnalytics.memberDetails.map(member => (
+                    <div key={member._id} className="table-row">
+                      <div className="col-name">
+                        <strong>{member.username}</strong>
+                        <span className="game-id">{member.gameId}</span>
+                      </div>
+                      <div className="col-kills">{member.kills}</div>
+                      <div className="col-wins">{member.wins}</div>
+                      <div className="col-status">
+                        {member.kills === 0 ? (
+                          <span className="status-inactive">Inactive</span>
+                        ) : (
+                          <span className="status-active">Active</span>
+                        )}
+                      </div>
+                      <div className="col-action">
                         {!member.isLeader && (
                           <button 
                             onClick={() => handleAdminKickMember(selectedSquad, member._id)}
-                            className="btn-kick-mem"
+                            className="btn-kick-action"
                           >
-                            🚫 Kick
+                            Remove
                           </button>
                         )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {squadAnalytics.inactiveCount > 0 && (
+                <div className="inactive-alert">
+                  <h4>⚠️ {squadAnalytics.inactiveCount} Inactive Members</h4>
+                  <p>These members haven't participated in any matches</p>
+                  <div className="inactive-members">
+                    {squadAnalytics.inactiveMembers.map(member => (
+                      <div key={member._id} className="inactive-member-item">
+                        <span>{member.username}</span>
+                        <button 
+                          onClick={() => handleAdminKickMember(selectedSquad, member._id)}
+                          className="btn-kick-inactive"
+                        >
+                          🚫 Remove
+                        </button>
                       </div>
                     ))}
                   </div>
                 </div>
+              )}
 
-                {squadAnalytics.inactiveCount > 0 && (
-                  <div className="inactive-warning">
-                    <h4>⚠️ Inactive Members: {squadAnalytics.inactiveCount}</h4>
-                    <div className="inactive-list">
-                      {squadAnalytics.inactiveMembers.map(member => (
-                        <div key={member._id} className="inactive-item">
-                          <span>{member.username}</span>
-                          <button 
-                            onClick={() => handleAdminKickMember(selectedSquad, member._id)}
-                            className="btn-kick-mem"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
+              <div className="squad-actions">
+                <button 
+                  onClick={() => handleAdminDeleteSquad(selectedSquad, squadAnalytics.squadInfo.name)}
+                  className="btn-delete-final"
+                >
+                  🗑️ Delete Squad
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Members Tab */}
+          {adminView === 'members' && (
+            <div className="admin-members">
+              <div className="members-header">
+                <h2>👥 System Members</h2>
+                <input 
+                  type="text"
+                  placeholder="Search members..."
+                  value={memberFilter}
+                  onChange={(e) => setMemberFilter(e.target.value)}
+                  className="members-search"
+                />
+              </div>
+
+              <div className="members-stats-overview">
+                <div className="member-stat-card">
+                  <div className="member-stat-value">{allMembers.length}</div>
+                  <div className="member-stat-label">Total Members</div>
+                </div>
+                <div className="member-stat-card">
+                  <div className="member-stat-value">{allMembers.filter(m => m.kills > 0).length}</div>
+                  <div className="member-stat-label">Active Players</div>
+                </div>
+                <div className="member-stat-card">
+                  <div className="member-stat-value">{allMembers.filter(m => m.kills === 0).length}</div>
+                  <div className="member-stat-label">Inactive Players</div>
+                </div>
+              </div>
+
+              <div className="members-list-table">
+                <div className="table-header">
+                  <div className="col-username">Username</div>
+                  <div className="col-gameid">Game ID</div>
+                  <div className="col-kills">Kills</div>
+                  <div className="col-wins">Wins</div>
+                  <div className="col-email">Email</div>
+                </div>
+                {allMembers
+                  .filter(m => m.username.toLowerCase().includes(memberFilter.toLowerCase()))
+                  .map(member => (
+                    <div key={member._id} className="table-row">
+                      <div className="col-username">{member.username}</div>
+                      <div className="col-gameid">{member.gameId}</div>
+                      <div className="col-kills">{member.kills || 0}</div>
+                      <div className="col-wins">{member.wins || 0}</div>
+                      <div className="col-email">{member.email}</div>
                     </div>
-                  </div>
-                )}
+                  ))}
               </div>
             </div>
           )}
