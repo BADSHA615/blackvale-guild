@@ -3,6 +3,18 @@
   "outputDirectory": "build",
   "framework": "react",
   "env": {
-    "REACT_APP_API_URL": "@api_url"
-  }
+    "REACT_APP_API_URL": "@api_url",
+    "CI": "false"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
 }
