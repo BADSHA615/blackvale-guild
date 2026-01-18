@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { squadService, authService } from '../services/api';
-import AdminSquadPanel from './AdminSquadPanel';
 import './SquadManagement.css';
 
 function SquadManagement() {
   const userId = localStorage.getItem('userId');
   const userRole = localStorage.getItem('userRole');
 
-  // If user is admin, show admin squad management panel
-  if (userRole === 'admin') {
-    return <AdminSquadPanel />;
-  }
+  // Admin state
+  const [adminView, setAdminView] = useState('overview');
+  const [allSquads, setAllSquads] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [selectedSquad, setSelectedSquad] = useState(null);
+  const [squadAnalytics, setSquadAnalytics] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
+  // User state
   const [squad, setSquad] = useState(null);
   const [createMode, setCreateMode] = useState(false);
   const [manageMode, setManageMode] = useState(false);
@@ -26,6 +30,105 @@ function SquadManagement() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Admin: Fetch Dashboard
+  const fetchAdminDashboard = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [statsRes, usersRes] = await Promise.all([
+        squadService.getSquadStats(),
+        authService.getAllUsers()
+      ]);
+      setStats(statsRes.data);
+      setAllUsers(usersRes.data);
+    } catch (err) {
+      setError('Error loading squad dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Admin: Fetch All Squads
+  const fetchAllSquads = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = {};
+      if (filterStatus) params.status = filterStatus;
+      if (searchTerm) params.search = searchTerm;
+      
+      const response = await squadService.getAllSquads(params);
+      setAllSquads(response.data.squads);
+    } catch (err) {
+      setError('Error fetching squads');
+    } finally {
+      setLoading(false);
+    }
+  }, [filterStatus, searchTerm]);
+
+  // Admin: Fetch Squad Analytics
+  const fetchSquadAnalytics = async (squadId) => {
+    try {
+      setLoading(true);
+      const response = await squadService.getSquadAnalytics(squadId);
+      setSquadAnalytics(response.data);
+      setSelectedSquad(squadId);
+      setAdminView('analytics');
+    } catch (err) {
+      setError('Error fetching analytics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Admin: Kick Member
+  const handleAdminKickMember = async (squadId, userId) => {
+    if (!window.confirm('Are you sure you want to kick this member?')) return;
+    
+    try {
+      setError('');
+      setSuccess('');
+      await squadService.adminKickMember(squadId, { userId, reason: 'Admin removal' });
+      setSuccess('Member kicked successfully');
+      await fetchSquadAnalytics(squadId);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error kicking member');
+    }
+  };
+
+  // Admin: Add Member
+  const handleAdminAddMember = async (squadId) => {
+    const userId = window.prompt('Enter user ID:');
+    if (!userId) return;
+
+    try {
+      setError('');
+      setSuccess('');
+      await squadService.adminAddMember(squadId, { userId });
+      setSuccess('Member added successfully');
+      await fetchSquadAnalytics(squadId);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error adding member');
+    }
+  };
+
+  // Admin: Delete Squad
+  const handleAdminDeleteSquad = async (squadId, squadName) => {
+    if (!window.confirm(`Delete squad "${squadName}"? This cannot be undone!`)) return;
+
+    const reason = window.prompt('Reason for deletion:');
+    
+    try {
+      setError('');
+      setSuccess('');
+      await squadService.adminDeleteSquad(squadId, { reason });
+      setSuccess('Squad deleted successfully');
+      setSelectedSquad(null);
+      await fetchAllSquads();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error deleting squad');
+    }
+  };
+
+  // User: Fetch Squad
   const fetchSquad = useCallback(async () => {
     try {
       const response = await squadService.getUserSquad(userId);
@@ -37,7 +140,8 @@ function SquadManagement() {
     }
   }, [userId]);
 
-  const fetchAllUsers = useCallback(async () => {
+  // User: Fetch All Users
+  const fetchAllUsersForUser = useCallback(async () => {
     try {
       const response = await authService.getAllUsers();
       setAllUsers(response.data.filter(u => u._id !== userId));
@@ -47,9 +151,13 @@ function SquadManagement() {
   }, [userId]);
 
   useEffect(() => {
-    fetchSquad();
-    fetchAllUsers();
-  }, [fetchSquad, fetchAllUsers]);
+    if (userRole === 'admin') {
+      fetchAdminDashboard();
+    } else {
+      fetchSquad();
+      fetchAllUsersForUser();
+    }
+  }, [userRole, fetchAdminDashboard, fetchSquad, fetchAllUsersForUser]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -151,6 +259,196 @@ function SquadManagement() {
 
   if (loading) return <div className="loading">Loading squad info...</div>;
 
+  // ADMIN VIEW
+  if (userRole === 'admin') {
+    return (
+      <div className="squad-management">
+        <div className="container">
+          {error && <div className="alert alert-error">{error}</div>}
+          {success && <div className="alert alert-success">{success}</div>}
+
+          {/* Admin Navigation */}
+          <div className="admin-squad-header">
+            <h1>⚔️ Squad Management Control Panel</h1>
+            <div className="admin-tabs">
+              <button 
+                className={`admin-tab ${adminView === 'overview' ? 'active' : ''}`}
+                onClick={() => setAdminView('overview')}
+              >
+                📊 Overview
+              </button>
+              <button 
+                className={`admin-tab ${adminView === 'all' ? 'active' : ''}`}
+                onClick={() => {
+                  setAdminView('all');
+                  if (allSquads.length === 0) fetchAllSquads();
+                }}
+              >
+                ⚔️ All Squads
+              </button>
+            </div>
+          </div>
+
+          {/* Overview Tab */}
+          {adminView === 'overview' && stats && (
+            <div className="admin-overview">
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-label">Total Squads</div>
+                  <div className="stat-value">{stats.squads.total}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Approved</div>
+                  <div className="stat-value">{stats.squads.approved}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Pending</div>
+                  <div className="stat-value">{stats.squads.pending}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Total Members</div>
+                  <div className="stat-value">{stats.performance.totalMembers}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Total Wins</div>
+                  <div className="stat-value">{stats.performance.totalWins}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* All Squads Tab */}
+          {adminView === 'all' && (
+            <div className="admin-all-squads">
+              <div className="search-filters">
+                <input 
+                  type="text" 
+                  placeholder="Search squads..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyUp={fetchAllSquads}
+                />
+                <select 
+                  value={filterStatus} 
+                  onChange={(e) => {
+                    setFilterStatus(e.target.value);
+                    fetchAllSquads();
+                  }}
+                >
+                  <option value="">All Status</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                </select>
+                <button onClick={fetchAllSquads} className="refresh-btn">🔄</button>
+              </div>
+
+              {allSquads.length === 0 ? (
+                <div className="no-data">No squads found</div>
+              ) : (
+                <div className="squads-grid">
+                  {allSquads.map(squad => (
+                    <div key={squad._id} className="admin-squad-card">
+                      <div className="squad-title">
+                        <h3>{squad.name}</h3>
+                        <span className={`status-badge ${squad.status}`}>{squad.status}</span>
+                      </div>
+                      <div className="squad-details">
+                        <p><strong>Leader:</strong> {squad.leader.username}</p>
+                        <p><strong>Members:</strong> {squad.members.length}/{squad.maxMembers}</p>
+                        <p><strong>Kills:</strong> {squad.analytics.totalKills}</p>
+                        <p><strong>Wins:</strong> {squad.analytics.totalWins}</p>
+                      </div>
+                      <div className="squad-btn-group">
+                        <button 
+                          onClick={() => fetchSquadAnalytics(squad._id)}
+                          className="btn-analytics"
+                        >
+                          📈 Analyze
+                        </button>
+                        {squad.status === 'approved' && (
+                          <>
+                            <button 
+                              onClick={() => handleAdminAddMember(squad._id)}
+                              className="btn-add-mem"
+                            >
+                              ➕ Add
+                            </button>
+                            <button 
+                              onClick={() => handleAdminDeleteSquad(squad._id, squad.name)}
+                              className="btn-delete-squad"
+                            >
+                              🗑️ Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Analytics Modal */}
+          {adminView === 'analytics' && squadAnalytics && (
+            <div className="analytics-modal">
+              <div className="modal-content">
+                <button onClick={() => {
+                  setAdminView('all');
+                  setSelectedSquad(null);
+                }} className="close-modal">✕</button>
+                
+                <h2>{squadAnalytics.squadInfo.name}</h2>
+                
+                <div className="analytics-section">
+                  <h4>Members ({squadAnalytics.memberDetails.length})</h4>
+                  <div className="members-list">
+                    {squadAnalytics.memberDetails.map(member => (
+                      <div key={member._id} className="member-row">
+                        <div>
+                          <strong>{member.username}</strong>
+                          <span className="member-stat">Kills: {member.kills}</span>
+                        </div>
+                        {!member.isLeader && (
+                          <button 
+                            onClick={() => handleAdminKickMember(selectedSquad, member._id)}
+                            className="btn-kick-mem"
+                          >
+                            🚫 Kick
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {squadAnalytics.inactiveCount > 0 && (
+                  <div className="inactive-warning">
+                    <h4>⚠️ Inactive Members: {squadAnalytics.inactiveCount}</h4>
+                    <div className="inactive-list">
+                      {squadAnalytics.inactiveMembers.map(member => (
+                        <div key={member._id} className="inactive-item">
+                          <span>{member.username}</span>
+                          <button 
+                            onClick={() => handleAdminKickMember(selectedSquad, member._id)}
+                            className="btn-kick-mem"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // USER VIEW
   return (
     <div className="squad-management">
       <div className="container">
