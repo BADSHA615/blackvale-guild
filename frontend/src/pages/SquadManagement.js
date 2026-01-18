@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { squadService, authService } from '../services/api';
 import './SquadManagement.css';
 
+// Advanced Squad Management with Admin Controls - v2.0
 function SquadManagement() {
   const userId = localStorage.getItem('userId');
   const userRole = localStorage.getItem('userRole');
