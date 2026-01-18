@@ -40,11 +40,18 @@ export const squadService = {
   updateName: (id, data) => api.put(`/squads/${id}/update-name`, data),
   getApproved: () => api.get('/squads/approved'),
   getUserSquad: (userId) => api.get(`/squads/user/${userId}`),
-  getById: (id) => api.get(`/squads/${id}`),
+  getById: (id) => api.get(`/squads/details/${id}`),
   addMember: (squadId, data) => api.put(`/squads/${squadId}/add-member`, data),
   removeMember: (squadId, data) => api.put(`/squads/${squadId}/remove-member`, data),
   leaveSquad: (squadId) => api.put(`/squads/${squadId}/leave`),
-  deactivateSquad: (squadId) => api.put(`/squads/${squadId}/deactivate`)
+  deactivateSquad: (squadId) => api.put(`/squads/${squadId}/deactivate`),
+  // Admin Squad Management
+  getAllSquads: (params) => api.get('/squads/admin/all-squads', { params }),
+  getSquadStats: () => api.get('/squads/admin/squad-stats'),
+  getSquadAnalytics: (squadId) => api.get(`/squads/admin/analytics/${squadId}`),
+  adminKickMember: (squadId, data) => api.put(`/squads/admin/kick-member/${squadId}`, data),
+  adminAddMember: (squadId, data) => api.put(`/squads/admin/add-member/${squadId}`, data),
+  adminDeleteSquad: (squadId, data) => api.delete(`/squads/admin/delete-squad/${squadId}`, { data })
 };
 
 export const leaderboardService = {

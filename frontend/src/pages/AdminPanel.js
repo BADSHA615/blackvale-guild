@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { screenshotService, squadService, settingsService } from '../services/api';
 import { useTheme } from '../themes/ThemeContext';
+import AdminSquadPanel from './AdminSquadPanel';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -192,6 +193,12 @@ function AdminPanel() {
             Squads ({pendingSquads.length})
           </button>
           <button
+            className={`tab ${activeTab === 'squad-management' ? 'active' : ''}`}
+            onClick={() => setActiveTab('squad-management')}
+          >
+            ⚔️ Squad Management
+          </button>
+          <button
             className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
@@ -357,6 +364,10 @@ function AdminPanel() {
                 </div>
               )}
             </div>
+          )}
+
+          {activeTab === 'squad-management' && !loading && (
+            <AdminSquadPanel />
           )}
 
           {activeTab === 'settings' && !loading && (

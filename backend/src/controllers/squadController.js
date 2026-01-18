@@ -401,3 +401,284 @@ exports.deactivateSquad = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ========== ADMIN SQUAD MANAGEMENT ==========
+
+// Get all squads with analytics (Admin)
+exports.getAllSquads = async (req, res) => {
+  try {
+    const { status, search } = req.query;
+
+    let query = {};
+    if (status) {
+      query.status = status;
+    }
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { 'leader.username': { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const squads = await Squad.find(query)
+      .populate('leader', '-password')
+      .populate('members', '-password')
+      .populate('approvedBy', '-password')
+      .sort({ createdAt: -1 });
+
+    // Add analytics for each squad
+    const squadsWithAnalytics = squads.map(squad => {
+      const squadObj = squad.toObject();
+      
+      // Calculate squad stats
+      const totalKills = squad.members.reduce((sum, member) => sum + (member.kills || 0), 0);
+      const totalWins = squad.members.reduce((sum, member) => sum + (member.wins || 0), 0);
+      const avgKills = squad.members.length > 0 ? (totalKills / squad.members.length).toFixed(2) : 0;
+      const avgWins = squad.members.length > 0 ? (totalWins / squad.members.length).toFixed(2) : 0;
+
+      squadObj.analytics = {
+        totalMembers: squad.members.length,
+        totalKills,
+        totalWins,
+        avgKills: parseFloat(avgKills),
+        avgWins: parseFloat(avgWins),
+        fillPercentage: ((squad.members.length / squad.maxMembers) * 100).toFixed(1)
+      };
+
+      return squadObj;
+    });
+
+    res.json({
+      count: squadsWithAnalytics.length,
+      squads: squadsWithAnalytics
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get squad analytics detail (Admin)
+exports.getSquadAnalytics = async (req, res) => {
+  try {
+    const { squadId } = req.params;
+
+    const squad = await Squad.findById(squadId)
+      .populate('leader', '-password')
+      .populate('members')
+      .populate('approvedBy', '-password');
+
+    if (!squad) {
+      return res.status(404).json({ message: 'Squad not found' });
+    }
+
+    // Detailed analytics
+    const totalKills = squad.members.reduce((sum, member) => sum + (member.kills || 0), 0);
+    const totalWins = squad.members.reduce((sum, member) => sum + (member.wins || 0), 0);
+    const totalMatches = squad.members.reduce((sum, member) => sum + (member.matches || 0), 0);
+    const avgKills = squad.members.length > 0 ? (totalKills / squad.members.length).toFixed(2) : 0;
+    const avgWins = squad.members.length > 0 ? (totalWins / squad.members.length).toFixed(2) : 0;
+
+    // Identify inactive members (no kills for 30 days assumed)
+    const inactiveMembers = squad.members.map(member => ({
+      _id: member._id,
+      username: member.username,
+      gameId: member.gameId,
+      kills: member.kills,
+      wins: member.wins,
+      matches: member.matches,
+      lastActive: member.createdAt,
+      isInactive: !member.kills || member.kills === 0 // Simple inactivity check
+    })).filter(m => m.isInactive);
+
+    const analytics = {
+      squadInfo: {
+        name: squad.name,
+        status: squad.status,
+        leader: squad.leader.username,
+        members: squad.members.length,
+        maxMembers: squad.maxMembers,
+        createdAt: squad.createdAt,
+        approvedAt: squad.approvedAt
+      },
+      performance: {
+        totalKills,
+        totalWins,
+        totalMatches,
+        avgKills: parseFloat(avgKills),
+        avgWins: parseFloat(avgWins),
+        winRate: totalMatches > 0 ? ((totalWins / totalMatches) * 100).toFixed(2) : '0'
+      },
+      memberDetails: squad.members.map(m => ({
+        _id: m._id,
+        username: m.username,
+        gameId: m.gameId,
+        kills: m.kills,
+        wins: m.wins,
+        matches: m.matches,
+        isLeader: m._id.toString() === squad.leader._id.toString()
+      })),
+      inactiveMembers,
+      inactiveCount: inactiveMembers.length
+    };
+
+    res.json(analytics);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Admin kick member from squad
+exports.adminKickMember = async (req, res) => {
+  try {
+    const { squadId } = req.params;
+    const { userId, reason } = req.body;
+
+    const squad = await Squad.findById(squadId);
+    if (!squad) {
+      return res.status(404).json({ message: 'Squad not found' });
+    }
+
+    // Cannot kick leader
+    if (userId === squad.leader.toString()) {
+      return res.status(400).json({ message: 'Cannot kick squad leader' });
+    }
+
+    // Check if member is in squad
+    if (!squad.members.includes(userId)) {
+      return res.status(400).json({ message: 'User is not in this squad' });
+    }
+
+    squad.members = squad.members.filter(id => id.toString() !== userId);
+    await squad.save();
+
+    // Update user
+    await User.findByIdAndUpdate(userId, { squad: null });
+
+    await squad.populate('leader', '-password');
+    await squad.populate('members', '-password');
+
+    res.json({
+      message: `Member kicked from squad${reason ? ' - ' + reason : ''}`,
+      squad
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Admin add member to squad
+exports.adminAddMember = async (req, res) => {
+  try {
+    const { squadId } = req.params;
+    const { userId } = req.body;
+
+    const squad = await Squad.findById(squadId);
+    if (!squad) {
+      return res.status(404).json({ message: 'Squad not found' });
+    }
+
+    // Check if squad is full
+    if (squad.members.length >= squad.maxMembers) {
+      return res.status(400).json({ message: 'Squad is full' });
+    }
+
+    // Check if user is already in squad
+    if (squad.members.includes(userId)) {
+      return res.status(400).json({ message: 'User is already in this squad' });
+    }
+
+    // Check if user is in another squad
+    const userSquad = await Squad.findOne({
+      members: userId,
+      status: 'approved'
+    });
+
+    if (userSquad) {
+      return res.status(400).json({ message: 'User is already in another squad' });
+    }
+
+    squad.members.push(userId);
+    await squad.save();
+
+    // Update user
+    await User.findByIdAndUpdate(userId, { squad: squadId });
+
+    await squad.populate('leader', '-password');
+    await squad.populate('members', '-password');
+
+    res.json({
+      message: 'Member added to squad by admin',
+      squad
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Admin delete squad completely
+exports.adminDeleteSquad = async (req, res) => {
+  try {
+    const { squadId } = req.params;
+    const { reason } = req.body;
+
+    const squad = await Squad.findById(squadId);
+    if (!squad) {
+      return res.status(404).json({ message: 'Squad not found' });
+    }
+
+    // Remove squad reference from all members
+    await User.updateMany(
+      { _id: { $in: squad.members } },
+      { squad: null }
+    );
+
+    // Delete squad
+    await Squad.findByIdAndDelete(squadId);
+
+    res.json({
+      message: `Squad deleted${reason ? ' - ' + reason : ''}`,
+      deletedSquadId: squadId,
+      deletedMembersCount: squad.members.length
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get squad statistics summary (Admin Dashboard)
+exports.getSquadStats = async (req, res) => {
+  try {
+    const totalSquads = await Squad.countDocuments();
+    const approvedSquads = await Squad.countDocuments({ status: 'approved' });
+    const pendingSquads = await Squad.countDocuments({ status: 'pending' });
+    const rejectedSquads = await Squad.countDocuments({ status: 'rejected' });
+    const inactiveSquads = await Squad.countDocuments({ status: 'inactive' });
+
+    const allSquads = await Squad.find()
+      .populate('members', 'kills')
+      .lean();
+
+    const totalMembers = allSquads.reduce((sum, squad) => sum + squad.members.length, 0);
+    const totalSquadWins = allSquads.reduce((sum, squad) => sum + (squad.wins || 0), 0);
+    const totalSquadLosses = allSquads.reduce((sum, squad) => sum + (squad.losses || 0), 0);
+
+    const stats = {
+      squads: {
+        total: totalSquads,
+        approved: approvedSquads,
+        pending: pendingSquads,
+        rejected: rejectedSquads,
+        inactive: inactiveSquads
+      },
+      performance: {
+        totalMembers,
+        totalWins: totalSquadWins,
+        totalLosses: totalSquadLosses
+      }
+    };
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
