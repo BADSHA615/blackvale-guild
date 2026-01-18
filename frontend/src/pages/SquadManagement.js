@@ -887,7 +887,7 @@ function SquadManagement() {
               <div className="squad-modal-list">
                 {allMembers && allMembers
                   .filter(member => 
-                    member._id !== user?.id &&
+                    member._id !== userId &&
                     !selectedSquad?.members?.some(m => m._id === member._id) &&
                     (member.username?.toLowerCase().includes(addMemberSearch.toLowerCase()) ||
                      member._id?.toLowerCase().includes(addMemberSearch.toLowerCase()))
