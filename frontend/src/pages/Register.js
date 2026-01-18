@@ -26,6 +26,7 @@ function Register({ onLogin }) {
       });
       localStorage.setItem('userId', response.data.user.id);
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userRole', 'player');
       onLogin(response.data.token, 'player');
       navigate('/');
     } catch (err) {
