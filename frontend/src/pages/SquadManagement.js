@@ -34,6 +34,9 @@ function SquadManagement() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [addMemberSearch, setAddMemberSearch] = useState('');
+  const [addingMemberId, setAddingMemberId] = useState(null);
 
   // Admin: Fetch Dashboard
   const fetchAdminDashboard = useCallback(async () => {
@@ -100,17 +103,33 @@ function SquadManagement() {
     }
   };
 
-  // Admin: Add Member
+  // Admin: Add Member (Modal-based)
   const handleAdminAddMember = async (squadId) => {
-    const userId = window.prompt('Enter user ID:');
-    if (!userId) return;
+    try {
+      setLoading(true);
+      const response = await squadService.getAllMembers?.() || { data: { members: [] } };
+      setAllMembers(response.data.members || []);
+    } catch (err) {
+      console.warn('Could not fetch members:', err);
+      setAllMembers([]);
+    } finally {
+      setLoading(false);
+      setShowAddMemberModal(true);
+      setAddingMemberId(squadId);
+      setAddMemberSearch('');
+    }
+  };
 
+  // Admin: Confirm Add Member
+  const confirmAddMember = async (userId) => {
     try {
       setError('');
       setSuccess('');
-      await squadService.adminAddMember(squadId, { userId });
+      await squadService.adminAddMember(addingMemberId, { userId });
       setSuccess('Member added successfully');
-      await fetchSquadAnalytics(squadId);
+      setShowAddMemberModal(false);
+      setAddingMemberId(null);
+      await fetchSquadAnalytics(addingMemberId);
     } catch (err) {
       setError(err.response?.data?.message || 'Error adding member');
     }
@@ -841,6 +860,61 @@ function SquadManagement() {
             </button>
           </div>
         )}
+
+      {/* Advanced Member Addition Modal */}
+      {showAddMemberModal && (
+        <div className="squad-modal-overlay">
+          <div className="squad-modal-container">
+            <div className="squad-modal-header">
+              <h2>Add Member to Squad</h2>
+              <button 
+                className="squad-modal-close"
+                onClick={() => setShowAddMemberModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="squad-modal-content">
+              <input
+                type="text"
+                placeholder="🔍 Search by username or ID..."
+                value={addMemberSearch}
+                onChange={(e) => setAddMemberSearch(e.target.value)}
+                className="squad-modal-search"
+              />
+
+              <div className="squad-modal-list">
+                {allMembers && allMembers
+                  .filter(member => 
+                    member._id !== user?.id &&
+                    !selectedSquad?.members?.some(m => m._id === member._id) &&
+                    (member.username?.toLowerCase().includes(addMemberSearch.toLowerCase()) ||
+                     member._id?.toLowerCase().includes(addMemberSearch.toLowerCase()))
+                  )
+                  .map(member => (
+                    <div key={member._id} className="squad-modal-item">
+                      <div className="squad-modal-item-info">
+                        <div className="squad-modal-item-name">{member.username || member._id}</div>
+                        <div className="squad-modal-item-stats">
+                          <span className="stat-badge">🎯 {member.kills || 0} kills</span>
+                          <span className="stat-badge">🏆 {member.wins || 0} wins</span>
+                        </div>
+                      </div>
+                      <button
+                        className="squad-modal-add-btn"
+                        onClick={() => confirmAddMember(member._id)}
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
     </div>
   );

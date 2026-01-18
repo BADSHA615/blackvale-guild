@@ -1473,3 +1473,227 @@
     font-size: 16px; /* Prevents zoom on iOS */
   }
 }
+/* Advanced Member Addition Modal */
+.squad-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.squad-modal-container {
+  background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+  border: 2px solid #00d4ff;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.2);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.squad-modal-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.squad-modal-header h2 {
+  color: #00d4ff;
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.squad-modal-close {
+  background: transparent;
+  border: none;
+  color: #00d4ff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.squad-modal-close:hover {
+  background: rgba(0, 212, 255, 0.1);
+  transform: rotate(90deg);
+}
+
+.squad-modal-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.squad-modal-search {
+  padding: 12px 15px;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  transition: all 0.2s ease;
+}
+
+.squad-modal-search:focus {
+  outline: none;
+  background: rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  border-color: #00ffff;
+}
+
+.squad-modal-search::placeholder {
+  color: rgba(0, 212, 255, 0.5);
+}
+
+.squad-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 5px;
+}
+
+.squad-modal-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.squad-modal-list::-webkit-scrollbar-track {
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 3px;
+}
+
+.squad-modal-list::-webkit-scrollbar-thumb {
+  background: #00d4ff;
+  border-radius: 3px;
+}
+
+.squad-modal-list::-webkit-scrollbar-thumb:hover {
+  background: #00ffff;
+}
+
+.squad-modal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.squad-modal-item:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: #00d4ff;
+  box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
+  transform: translateX(5px);
+}
+
+.squad-modal-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.squad-modal-item-name {
+  color: #00ffff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.squad-modal-item-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.stat-badge {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.squad-modal-add-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #00d4ff, #00ffff);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.squad-modal-add-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.squad-modal-add-btn:active {
+  transform: scale(0.98);
+}
+
+/* Responsive Modal */
+@media (max-width: 600px) {
+  .squad-modal-container {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .squad-modal-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .squad-modal-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .squad-modal-add-btn {
+    align-self: flex-end;
+  }
+}
