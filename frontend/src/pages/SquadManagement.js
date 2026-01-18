@@ -107,11 +107,14 @@ function SquadManagement() {
   const handleAdminAddMember = async (squadId) => {
     try {
       setLoading(true);
-      const response = await squadService.getAllMembers?.() || { data: { members: [] } };
-      setAllMembers(response.data.members || []);
+      const response = await authService.getAllUsers();
+      // Filter out current user and those already in a squad
+      const availableMembers = response.data.filter(u => u._id !== userId);
+      setAllMembers(availableMembers);
     } catch (err) {
       console.warn('Could not fetch members:', err);
       setAllMembers([]);
+      setError('Error loading available members');
     } finally {
       setLoading(false);
       setShowAddMemberModal(true);
@@ -885,30 +888,35 @@ function SquadManagement() {
               />
 
               <div className="squad-modal-list">
-                {allMembers && allMembers
-                  .filter(member => 
-                    member._id !== userId &&
-                    !selectedSquad?.members?.some(m => m._id === member._id) &&
-                    (member.username?.toLowerCase().includes(addMemberSearch.toLowerCase()) ||
-                     member._id?.toLowerCase().includes(addMemberSearch.toLowerCase()))
-                  )
-                  .map(member => (
-                    <div key={member._id} className="squad-modal-item">
-                      <div className="squad-modal-item-info">
-                        <div className="squad-modal-item-name">{member.username || member._id}</div>
-                        <div className="squad-modal-item-stats">
-                          <span className="stat-badge">🎯 {member.kills || 0} kills</span>
-                          <span className="stat-badge">🏆 {member.wins || 0} wins</span>
+                {allMembers && allMembers.length > 0 ? (
+                  allMembers
+                    .filter(member => 
+                      member._id !== userId &&
+                      (member.username?.toLowerCase().includes(addMemberSearch.toLowerCase()) ||
+                       member._id?.toLowerCase().includes(addMemberSearch.toLowerCase()))
+                    )
+                    .map(member => (
+                      <div key={member._id} className="squad-modal-item">
+                        <div className="squad-modal-item-info">
+                          <div className="squad-modal-item-name">{member.username || member._id}</div>
+                          <div className="squad-modal-item-stats">
+                            <span className="stat-badge">🎯 {member.kills || 0} kills</span>
+                            <span className="stat-badge">🏆 {member.wins || 0} wins</span>
+                          </div>
                         </div>
+                        <button
+                          className="squad-modal-add-btn"
+                          onClick={() => confirmAddMember(member._id)}
+                        >
+                          Add
+                        </button>
                       </div>
-                      <button
-                        className="squad-modal-add-btn"
-                        onClick={() => confirmAddMember(member._id)}
-                      >
-                        Add
-                      </button>
-                    </div>
-                  ))}
+                    ))
+                ) : (
+                  <div className="no-members-available">
+                    <p>No members available</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
