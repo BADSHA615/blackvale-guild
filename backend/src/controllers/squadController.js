@@ -221,6 +221,11 @@ exports.addMember = async (req, res) => {
     const { squadId } = req.params;
     const { userId } = req.body;
 
+    // Validate userId format
+    if (!userId || typeof userId !== 'string') {
+      return res.status(400).json({ message: 'Invalid user ID provided' });
+    }
+
     const squad = await Squad.findById(squadId);
     if (!squad) {
       return res.status(404).json({ message: 'Squad not found' });
@@ -236,8 +241,15 @@ exports.addMember = async (req, res) => {
       return res.status(400).json({ message: 'Squad is full' });
     }
 
-    // Check if user is already in squad
-    if (squad.members.includes(userId)) {
+    // Check if user exists
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if user is already in squad (proper ObjectId comparison)
+    const isMember = squad.members.some(memberId => memberId.toString() === userId);
+    if (isMember) {
       return res.status(400).json({ message: 'User is already in this squad' });
     }
 
@@ -572,6 +584,11 @@ exports.adminAddMember = async (req, res) => {
     const { squadId } = req.params;
     const { userId } = req.body;
 
+    // Validate userId format
+    if (!userId || typeof userId !== 'string') {
+      return res.status(400).json({ message: 'Invalid user ID provided' });
+    }
+
     const squad = await Squad.findById(squadId);
     if (!squad) {
       return res.status(404).json({ message: 'Squad not found' });
@@ -582,8 +599,15 @@ exports.adminAddMember = async (req, res) => {
       return res.status(400).json({ message: 'Squad is full' });
     }
 
-    // Check if user is already in squad
-    if (squad.members.includes(userId)) {
+    // Check if user exists
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if user is already in squad (proper ObjectId comparison)
+    const isMember = squad.members.some(memberId => memberId.toString() === userId);
+    if (isMember) {
       return res.status(400).json({ message: 'User is already in this squad' });
     }
 
