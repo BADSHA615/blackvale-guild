@@ -5,6 +5,7 @@ import './SquadManagement.css';
 function SquadManagement() {
   const [squad, setSquad] = useState(null);
   const [createMode, setCreateMode] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -13,8 +14,11 @@ function SquadManagement() {
   const [allUsers, setAllUsers] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const userId = localStorage.getItem('userId');
+  const userRole = localStorage.getItem('userRole');
 
   const fetchSquad = useCallback(async () => {
     try {
@@ -56,15 +60,86 @@ function SquadManagement() {
 
   const handleCreateSquad = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+
     try {
+      if (!formData.name.trim()) {
+        setError('Squad name is required');
+        return;
+      }
+
       await squadService.create(formData);
       setFormData({ name: '', description: '', maxMembers: 4 });
       setSelectedMembers([]);
       setCreateMode(false);
-      // Note: Squad request sent, await admin approval
-      alert('Squad request submitted! Waiting for admin approval.');
+      setSuccess('Squad created and sent for approval!');
+      
+      // Refresh squad data
+      setTimeout(fetchSquad, 1000);
     } catch (error) {
+      setError(error.response?.data?.message || 'Error creating squad');
       console.error('Error creating squad:', error);
+    }
+  };
+
+  const handleAddMember = async (userId) => {
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await squadService.addMember(squad._id, { userId });
+      setSquad(response.data.squad);
+      setSuccess('Member added successfully');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Error adding member');
+    }
+  };
+
+  const handleRemoveMember = async (userId) => {
+    if (!window.confirm('Are you sure you want to remove this member?')) return;
+
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await squadService.removeMember(squad._id, { userId });
+      setSquad(response.data.squad);
+      setSuccess('Member removed');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Error removing member');
+    }
+  };
+
+  const handleLeaveSquad = async () => {
+    if (!window.confirm('Are you sure you want to leave this squad?')) return;
+
+    setError('');
+    setSuccess('');
+
+    try {
+      await squadService.leaveSquad(squad._id);
+      setSquad(null);
+      setSuccess('You have left the squad');
+      setTimeout(fetchSquad, 1000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Error leaving squad');
+    }
+  };
+
+  const handleDeactivateSquad = async () => {
+    if (!window.confirm('Are you sure you want to deactivate this squad? This action cannot be undone.')) return;
+
+    setError('');
+    setSuccess('');
+
+    try {
+      await squadService.deactivateSquad(squad._id);
+      setSquad(null);
+      setSuccess('Squad deactivated');
+      setTimeout(fetchSquad, 1000);
+    } catch (error) {
+      setError(error.response?.data?.message || 'Error deactivating squad');
     }
   };
 
@@ -73,10 +148,33 @@ function SquadManagement() {
   return (
     <div className="squad-management">
       <div className="container">
+        {error && <div className="alert alert-error">{error}</div>}
+        {success && <div className="alert alert-success">{success}</div>}
+
         {squad && squad.status === 'approved' ? (
           <div className="squad-card">
-            <h1>⚔️ Squad: {squad.name}</h1>
-            <p className="squad-desc">{squad.description}</p>
+            <div className="squad-header">
+              <h1>⚔️ Squad: {squad.name}</h1>
+              <div className="squad-actions">
+                {squad.leader._id === userId && (
+                  <>
+                    <button onClick={() => setManageMode(!manageMode)} className="btn-secondary">
+                      {manageMode ? 'Cancel' : 'Manage Squad'}
+                    </button>
+                    <button onClick={handleDeactivateSquad} className="btn-danger">
+                      Deactivate Squad
+                    </button>
+                  </>
+                )}
+                {squad.leader._id !== userId && (
+                  <button onClick={handleLeaveSquad} className="btn-danger">
+                    Leave Squad
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {squad.description && <p className="squad-desc">{squad.description}</p>}
             
             <div className="squad-info">
               <div className="info-item">
@@ -91,6 +189,18 @@ function SquadManagement() {
                 <span className="label">Status:</span>
                 <span className="value status-approved">APPROVED</span>
               </div>
+              {squad.wins !== undefined && (
+                <>
+                  <div className="info-item">
+                    <span className="label">Wins:</span>
+                    <span className="value">{squad.wins}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Losses:</span>
+                    <span className="value">{squad.losses}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <h3>Squad Members</h3>
@@ -103,9 +213,36 @@ function SquadManagement() {
                     <span>💥 {member.kills}</span>
                     <span>🏆 {member.wins}</span>
                   </div>
+                  {squad.leader._id === userId && member._id !== userId && (
+                    <button 
+                      onClick={() => handleRemoveMember(member._id)}
+                      className="btn-remove"
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
+
+            {manageMode && squad.leader._id === userId && squad.members.length < squad.maxMembers && (
+              <div className="manage-section">
+                <h3>Add Members</h3>
+                <div className="available-members">
+                  {allUsers.filter(u => !squad.members.some(m => m._id === u._id)).map(user => (
+                    <div key={user._id} className="user-option">
+                      <span>{user.username} ({user.gameId})</span>
+                      <button 
+                        onClick={() => handleAddMember(user._id)}
+                        className="btn-add"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : squad ? (
           <div className="squad-card pending">
@@ -121,6 +258,12 @@ function SquadManagement() {
                 <span className="value status-pending">PENDING</span>
               </div>
             </div>
+            {squad.adminComment && (
+              <div className="admin-comment">
+                <strong>Admin Comment:</strong>
+                <p>{squad.adminComment}</p>
+              </div>
+            )}
           </div>
         ) : createMode ? (
           <div className="squad-card">
@@ -134,7 +277,8 @@ function SquadManagement() {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  placeholder="Enter squad name"
+                  placeholder="Enter squad name (min. 3 characters)"
+                  maxLength="50"
                 />
               </div>
 
@@ -146,6 +290,7 @@ function SquadManagement() {
                   onChange={handleInputChange}
                   rows="3"
                   placeholder="Squad description..."
+                  maxLength="500"
                 ></textarea>
               </div>
 
@@ -161,23 +306,6 @@ function SquadManagement() {
                 />
               </div>
 
-              <h3>Invite Members</h3>
-              <div className="members-selection">
-                {allUsers.map(user => (
-                  <label key={user._id} className="member-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedMembers.includes(user._id)}
-                      onChange={() => toggleMember(user._id)}
-                    />
-                    <span className="checkmark"></span>
-                    <span className="member-info">
-                      {user.username} ({user.gameId})
-                    </span>
-                  </label>
-                ))}
-              </div>
-
               <div className="button-group">
                 <button type="submit" className="submit-btn">Create Squad</button>
                 <button type="button" onClick={() => setCreateMode(false)} className="cancel-btn">
@@ -185,6 +313,7 @@ function SquadManagement() {
                 </button>
               </div>
             </form>
+            <p className="note">Note: You will be added as the squad leader. Members can be added after admin approval.</p>
           </div>
         ) : (
           <div className="squad-card no-squad">

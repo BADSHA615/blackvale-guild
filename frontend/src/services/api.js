@@ -34,12 +34,17 @@ export const screenshotService = {
 
 export const squadService = {
   create: (data) => api.post('/squads/create', data),
-  getPending: () => api.get('/squads/pending'),
-  approve: (id, data) => api.put(`/squads/approve/${id}`, data),
-  reject: (id, data) => api.put(`/squads/reject/${id}`, data),
-  updateName: (id, data) => api.put(`/squads/update-name/${id}`, data),
+  getPending: () => api.get('/squads/pending/admin/list'),
+  approve: (id, data) => api.put(`/squads/${id}/approve`, data),
+  reject: (id, data) => api.put(`/squads/${id}/reject`, data),
+  updateName: (id, data) => api.put(`/squads/${id}/update-name`, data),
   getApproved: () => api.get('/squads/approved'),
   getUserSquad: (userId) => api.get(`/squads/user/${userId}`),
+  getById: (id) => api.get(`/squads/${id}`),
+  addMember: (squadId, data) => api.put(`/squads/${squadId}/add-member`, data),
+  removeMember: (squadId, data) => api.put(`/squads/${squadId}/remove-member`, data),
+  leaveSquad: (squadId) => api.put(`/squads/${squadId}/leave`),
+  deactivateSquad: (squadId) => api.put(`/squads/${squadId}/deactivate`)
 };
 
 export const leaderboardService = {
