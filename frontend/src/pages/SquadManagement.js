@@ -37,6 +37,9 @@ function SquadManagement() {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [addMemberSearch, setAddMemberSearch] = useState('');
   const [addingMemberId, setAddingMemberId] = useState(null);
+  const [addingMemberUserId, setAddingMemberUserId] = useState(null);
+  const [addMemberLoading, setAddMemberLoading] = useState(false);
+  const [selectedForBatch, setSelectedForBatch] = useState([]);
 
   // Admin: Fetch Dashboard
   const fetchAdminDashboard = useCallback(async () => {
@@ -125,16 +128,47 @@ function SquadManagement() {
 
   // Admin: Confirm Add Member
   const confirmAddMember = async (userId) => {
+    if (!userId || !addingMemberId) {
+      setError('Invalid member or squad selection');
+      return;
+    }
+
     try {
       setError('');
       setSuccess('');
-      await squadService.adminAddMember(addingMemberId, { userId });
-      setSuccess('Member added successfully');
-      setShowAddMemberModal(false);
-      setAddingMemberId(null);
-      await fetchSquadAnalytics(addingMemberId);
+      setAddMemberLoading(true);
+      setAddingMemberUserId(userId);
+
+      const response = await squadService.adminAddMember(addingMemberId, { userId });
+      
+      // Show success message with member name
+      const memberName = allMembers.find(m => m._id === userId)?.username || 'Member';
+      setSuccess(`✅ ${memberName} added successfully!`);
+      
+      // Refresh after delay
+      setTimeout(() => {
+        setShowAddMemberModal(false);
+        setAddingMemberId(null);
+        setAddingMemberUserId(null);
+        setAllMembers(prev => prev.filter(m => m._id !== userId));
+        fetchSquadAnalytics(addingMemberId);
+      }, 1500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error adding member');
+      const errorMsg = err.response?.data?.message || 'Error adding member';
+      
+      // Provide specific error handling
+      if (errorMsg.includes('already')) {
+        setError(`⚠️ ${errorMsg}`);
+      } else if (errorMsg.includes('full')) {
+        setError(`⚠️ Squad is full - cannot add more members`);
+      } else if (errorMsg.includes('not found')) {
+        setError(`⚠️ User not found`);
+      } else {
+        setError(`❌ ${errorMsg}`);
+      }
+    } finally {
+      setAddMemberLoading(false);
+      setAddingMemberUserId(null);
     }
   };
 
@@ -869,23 +903,41 @@ function SquadManagement() {
         <div className="squad-modal-overlay">
           <div className="squad-modal-container">
             <div className="squad-modal-header">
-              <h2>Add Member to Squad</h2>
+              <div className="modal-title-section">
+                <h2>➕ Add Squad Member</h2>
+                <p className="modal-subtitle">Found {allMembers.filter(m => 
+                  m._id !== userId && 
+                  (m.username?.toLowerCase().includes(addMemberSearch.toLowerCase()) ||
+                   m._id?.toLowerCase().includes(addMemberSearch.toLowerCase()))
+                ).length} available members</p>
+              </div>
               <button 
                 className="squad-modal-close"
-                onClick={() => setShowAddMemberModal(false)}
+                onClick={() => {
+                  setShowAddMemberModal(false);
+                  setAddMemberSearch('');
+                }}
+                disabled={addMemberLoading}
               >
                 ✕
               </button>
             </div>
 
+            {error && <div className="modal-alert error">{error}</div>}
+            {success && <div className="modal-alert success">{success}</div>}
+
             <div className="squad-modal-content">
-              <input
-                type="text"
-                placeholder="🔍 Search by username or ID..."
-                value={addMemberSearch}
-                onChange={(e) => setAddMemberSearch(e.target.value)}
-                className="squad-modal-search"
-              />
+              <div className="modal-search-wrapper">
+                <input
+                  type="text"
+                  placeholder="🔍 Search by username or game ID..."
+                  value={addMemberSearch}
+                  onChange={(e) => setAddMemberSearch(e.target.value)}
+                  className="squad-modal-search"
+                  disabled={addMemberLoading}
+                />
+                <span className="search-icon">🔍</span>
+              </div>
 
               <div className="squad-modal-list">
                 {allMembers && allMembers.length > 0 ? (
@@ -896,25 +948,50 @@ function SquadManagement() {
                        member._id?.toLowerCase().includes(addMemberSearch.toLowerCase()))
                     )
                     .map(member => (
-                      <div key={member._id} className="squad-modal-item">
+                      <div 
+                        key={member._id} 
+                        className={`squad-modal-item ${addingMemberUserId === member._id ? 'adding' : ''}`}
+                      >
                         <div className="squad-modal-item-info">
-                          <div className="squad-modal-item-name">{member.username || member._id}</div>
+                          <div className="squad-modal-item-header">
+                            <div className="squad-modal-item-name">{member.username || member._id}</div>
+                            {member.kills === 0 && member.wins === 0 && (
+                              <span className="status-badge new">New</span>
+                            )}
+                            {member.kills > 100 && (
+                              <span className="status-badge veteran">Veteran</span>
+                            )}
+                          </div>
+                          <div className="squad-modal-item-detail">{member.gameId}</div>
                           <div className="squad-modal-item-stats">
-                            <span className="stat-badge">🎯 {member.kills || 0} kills</span>
-                            <span className="stat-badge">🏆 {member.wins || 0} wins</span>
+                            <span className="stat-badge kills">
+                              <span className="stat-icon">💥</span> {member.kills || 0}
+                            </span>
+                            <span className="stat-badge wins">
+                              <span className="stat-icon">🏆</span> {member.wins || 0}
+                            </span>
                           </div>
                         </div>
                         <button
-                          className="squad-modal-add-btn"
+                          className={`squad-modal-add-btn ${addingMemberUserId === member._id ? 'loading' : ''}`}
                           onClick={() => confirmAddMember(member._id)}
+                          disabled={addMemberLoading}
+                          title={`Add ${member.username} to squad`}
                         >
-                          Add
+                          {addingMemberUserId === member._id ? (
+                            <>
+                              <span className="spinner"></span> Adding...
+                            </>
+                          ) : (
+                            '➕ Add'
+                          )}
                         </button>
                       </div>
                     ))
                 ) : (
                   <div className="no-members-available">
-                    <p>No members available</p>
+                    <p>😐 No members available</p>
+                    <small>All members are either already in a squad or match the current filter</small>
                   </div>
                 )}
               </div>
