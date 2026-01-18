@@ -3,9 +3,7 @@
   base = "frontend"
   command = "npm run build"
   publish = "build"
-  environment = { NODE_VERSION = "18", CI = "false" }
 
-# Environment variables - SET THESE IN NETLIFY DASHBOARD TOO!
 [build.environment]
   NODE_VERSION = "18"
   REACT_APP_API_URL = "https://blackvale-backend.onrender.com"
