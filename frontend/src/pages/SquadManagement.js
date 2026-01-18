@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { squadService, authService } from '../services/api';
+import AdminSquadPanel from './AdminSquadPanel';
 import './SquadManagement.css';
 
 function SquadManagement() {
+  const userId = localStorage.getItem('userId');
+  const userRole = localStorage.getItem('userRole');
+
+  // If user is admin, show admin squad management panel
+  if (userRole === 'admin') {
+    return <AdminSquadPanel />;
+  }
+
   const [squad, setSquad] = useState(null);
   const [createMode, setCreateMode] = useState(false);
   const [manageMode, setManageMode] = useState(false);
@@ -16,9 +25,6 @@ function SquadManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  const userId = localStorage.getItem('userId');
-  const userRole = localStorage.getItem('userRole');
 
   const fetchSquad = useCallback(async () => {
     try {
